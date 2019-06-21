@@ -3,16 +3,19 @@
 <%
 // Check the refresh token in the request header matches to one in session object.
 // Get the refresh token in the request header.
-String refreshTokenInHeader = request.getHeader("Authentication");
+String refreshTokenInParam = request.getParameter("refresh_token");
 // Get the refresh token in session object.
 String refreshTokenInSession = (String)session.getAttribute("RefreshToken");
-if (refreshTokenInSession == null) { // Refresh token is not in session object.
+
+String usernameInParam = request.getParameter("username");
+String usernameInSession = (String)session.getAttribute("username");
+if (refreshTokenInSession == null || usernameInSession == null) { // Refresh token is not in session object.
 	// Probably user is not logged in and need authentication (login).
 	response.setStatus(401);
 %>
 {"error-msg": "No refresh token in session data", "error-code": 5}
 <%
-} else if (!refreshTokenInSession.equals(refreshTokenInHeader)) { // The refresh token in the request header is invalid.
+} else if (!refreshTokenInSession.equals(refreshTokenInParam) || !usernameInSession.equals(usernameInParam)) { // The refresh token in the request header is invalid.
 	// Need authentication to get a valid refresh token.
 	response.setStatus(401);
 %>

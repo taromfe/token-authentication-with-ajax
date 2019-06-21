@@ -25,10 +25,7 @@ $(document).ready(function(){
 		{
 			url: "<%= request.getContextPath() %>/refresh_token.jsp",
 			dataType: 'json',
-			// Add a header for authentication by refresh token.
-			headers: {
-				"Authentication": rToken
-			},
+			data: "refresh_token=" + localStorage.getItem("RefreshToken") + "&username=" + <%= username %>,
 			success: function(data) {
 				// Retrieve new ID token from response.
 				idToken = data["IdToken"];
@@ -47,13 +44,13 @@ $(document).ready(function(){
 		});
 	};
 	
-	// Access access_point.jsp when clicking a button in this page.
+	// Access to access_point.jsp when clicking a button in this page.
 	$("button").click(function() {
 		$.ajax(
 		{
 			url: "<%= request.getContextPath() %>/access_point.jsp",
-			data: "param=" + $("#text-input").val(),
-			dataType: 'json',
+			data: "param=" + $("#text-input").val(), // pass a parameter, "param", whose value is set in the textbox of this page.
+			dataType: 'json', // Return value format is JSON.
 			// Add a header for authentication by ID token.
 			headers: {
 				"Authentication": localStorage.getItem("IdToken")
@@ -62,6 +59,7 @@ $(document).ready(function(){
 				// Show how many times the ID token was used in this page.
 				counter = data["token_usage_counter"];
 				$("#counter").text(counter);
+				localStorage.setItem("tokenUsageCounter", counter);
 				// Show the message in the response.
 				msg = data["msg"];
 				$("#msg").html(msg); // XSS can happen here.
