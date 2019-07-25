@@ -17,7 +17,7 @@ if (username == null || "".equals(username)) { // User is not logged in.
 <script type="text/javascript">
 $(document).ready(function(){
 	// Function for refreshing ID token.
-	var refreshToken = function() {
+	var refreshToken = function(action) {
 		// Retrirve a token from local storage for renewing (refreshing) ID token
 		rToken = localStorage.getItem("RefreshToken");
 		// AJAX call to refresh_token.jsp for renewing ID token.
@@ -25,7 +25,7 @@ $(document).ready(function(){
 		{
 			url: "<%= request.getContextPath() %>/refresh_token.jsp",
 			dataType: 'json',
-			data: "refresh_token=" + localStorage.getItem("RefreshToken") + "&username=" + <%= username %>,
+			data: "refresh_token=" + localStorage.getItem("RefreshToken") + "&username=<%= username %>",
 			success: function(data) {
 				// Retrieve new ID token from response.
 				idToken = data["IdToken"];
@@ -34,8 +34,16 @@ $(document).ready(function(){
 				// Show a message in this page.
 				$("#msg").text("INFO: token has been refreshed");
 				$("#idToken").text("ID Token: " + idToken);
-				// Click "button" again with the new ID token.
-				$("button").click();
+				// Execute action
+				if (action != null) {
+					console.log("action is null.");
+					if (action == "button_click") {
+						// Click "button" again with the new ID token.
+						$("button").click();
+					} else {
+						console.log("no matched action to " + action);
+					}
+				}
 			},
 			error: function(data) {
 				// Show an error message in thie page.
@@ -72,7 +80,7 @@ $(document).ready(function(){
 				$("#msg").text("ERROR: error-code=" + errorCode);
 				if (errorCode == 2) { // ID token was expired.
 					// Renew (refresh) ID token.
-					refreshToken();
+					refreshToken('button_click');
 				}
 			}
 		});

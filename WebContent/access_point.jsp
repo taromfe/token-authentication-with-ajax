@@ -7,6 +7,18 @@ response.setHeader("Cache-Control", "private, no-store, no-cache, must-revalidat
 // Set maximum value how many times ID token can be used.
 final int maxTokenUsageCounter = 1;
 		
+// Is authentication required?
+boolean authenticationRequired = true;
+
+// Request paramtere.
+String param = request.getParameter("param");
+
+if (!authenticationRequired) {
+%>
+{"msg": "<%= param %>", "token_usage_counter": 0}
+<%
+} else {
+		
 // Check as if user is logged in.
 String username = (String)session.getAttribute("username");
 if (username == null || "".equals(username)) { // User is not logged in.
@@ -60,7 +72,6 @@ if (username == null || "".equals(username)) { // User is not logged in.
 					// The ID token is valid and proceed to process the request.
 					// Increment the counter for counting how many times the ID token was used.
 					session.setAttribute("token_usage_counter", new Integer(tokenUsageCounter.intValue() + 1));
-					String param = request.getParameter("param");
 %>
 {"msg": "<%= param %>", "token_usage_counter": <%= session.getAttribute("token_usage_counter") %>}
 <%
@@ -69,5 +80,6 @@ if (username == null || "".equals(username)) { // User is not logged in.
 			}
 		}
 	}
+}
 }
 %>	
