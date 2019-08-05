@@ -1,11 +1,14 @@
 <%@ page language="java" contentType="application/json"
     pageEncoding="UTF-8"%>
+<%@ page import="java.util.Date" %>
 <%
 // No cache for this URL content.
 response.setHeader("Cache-Control", "private, no-store, no-cache, must-revalidate");
 
 // Set maximum value how many times ID token can be used.
-final int maxTokenUsageCounter = 1;
+final int maxTokenUsageCounter = 3;
+		
+final long milliSecToLive = 60 * 1000; // 1 minute.
 		
 // Is authentication required?
 boolean authenticationRequired = true;
@@ -28,17 +31,17 @@ if (username == null || "".equals(username)) { // User is not logged in.
 {"error-msg": "no username", "error-code": 0}
 <%
 } else {
-	// Check how many times the ID token was used.
-	// Get the counter for that from session object.
-	Integer tokenUsageCounter = (Integer)session.getAttribute("token_usage_counter");
-	if (tokenUsageCounter == null) { // The counter is not set.
+	// Check token issued time.
+	// Get the time for that from session object.
+	Long tokenIssuedTime = (Long)session.getAttribute("token_issued_time");
+	if (tokenIssuedTime == null) { // The time is not set.
 		// Probably user is not logged in and need authentication.
 		response.setStatus(401);
 %>
-{"error-msg": "token usage counter is not set", "error-code": 1}
+{"error-msg": "token issued time is not set", "error-code": 1}
 <%
 	} else {
-		if (tokenUsageCounter.intValue() >= maxTokenUsageCounter) { // The ID token is used too much times and need renewal.
+		if (tokenIssuedTime.longValue() <= ((new Date().getTime()) - milliSecToLive)) { // Is the token expired?
 			// Need authentication again or renew the ID token.
 			response.setStatus(401);
 %>
@@ -69,11 +72,9 @@ if (username == null || "".equals(username)) { // User is not logged in.
 {"error-msg": "Invalid Authentication token", "error-code": 4}
 <%
 					} else {
-					// The ID token is valid and proceed to process the request.
-					// Increment the counter for counting how many times the ID token was used.
-					session.setAttribute("token_usage_counter", new Integer(tokenUsageCounter.intValue() + 1));
+					// echo the message.
 %>
-{"msg": "<%= param %>", "token_usage_counter": <%= session.getAttribute("token_usage_counter") %>}
+{"msg": "<%= param %>"}
 <%
 					}
 				}

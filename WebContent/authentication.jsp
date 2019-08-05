@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ page import="java.util.Date" %>
 <%
 // Username and password are hard coded here.
 final String USERNAME = "foo";
@@ -17,10 +18,8 @@ if (!(USERNAME.equals(username)) || !(PASSWORD.equals(password))) { // Not valid
 	// Store necessary info into session object.
 	// Store username.
 	session.setAttribute("username", username);
-	// Set a counter for counting how many times ID token is used.
-	// The counter's initial value is 1, then refresh ID token happens
-	// in the first attempt to access to access_point.jsp.
-	session.setAttribute("token_usage_counter", new Integer(1));
+	// Set token issued time
+	session.setAttribute("token_issued_time", new Long(new Date().getTime()));
 	// Set a counter for providing a new ID token. The counter value is added to the value of ID token and incremented when issued new one.
 	Integer tokenSequentialNum = new Integer(0);
 	session.setAttribute("token_sequential_num", tokenSequentialNum);

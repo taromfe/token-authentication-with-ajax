@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="application/json"
     pageEncoding="UTF-8"%>
+<%@ page import="java.util.Date" %>
 <%
 // Check the refresh token in the request header matches to one in session object.
 // Get the refresh token in the request header.
@@ -35,8 +36,8 @@ if (refreshTokenInSession == null || usernameInSession == null) { // Refresh tok
 	session.setAttribute("IdToken", idToken);
 	// Store the new counter value to session object.
 	session.setAttribute("token_sequential_num", tokenSequenceNum);
-	// Reset the counter for counting how many times ID token is used (set it to 0).
-	session.setAttribute("token_usage_counter", new Integer(0));
+	// Reset token issued time.
+	session.setAttribute("token_issued_time", new Long(new Date().getTime()));
 %>
 {"IdToken": "<%= idToken %>"}
 <%

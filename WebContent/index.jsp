@@ -16,6 +16,8 @@ if (username == null || "".equals(username)) { // User is not logged in.
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript">
 $(document).ready(function(){
+	// error counter for avoiding infinite loop
+	var errorCounter = 0;
 	// Function for refreshing ID token.
 	var refreshToken = function(action) {
 		// Retrirve a token from local storage for renewing (refreshing) ID token
@@ -64,10 +66,6 @@ $(document).ready(function(){
 				"Authentication": localStorage.getItem("IdToken")
 			},
 			success: function (data) {
-				// Show how many times the ID token was used in this page.
-				counter = data["token_usage_counter"];
-				$("#counter").text(counter);
-				localStorage.setItem("tokenUsageCounter", counter);
 				// Show the message in the response.
 				msg = data["msg"];
 				$("#msg").html(msg); // XSS can happen here.
@@ -76,11 +74,16 @@ $(document).ready(function(){
 				// Get the error code.
 				responseText = data["responseText"];
 				errorCode = JSON.parse(responseText)["error-code"];
-				// Show the error code in this page.
 				$("#msg").text("ERROR: error-code=" + errorCode);
-				if (errorCode == 2) { // ID token was expired.
-					// Renew (refresh) ID token.
-					refreshToken('button_click');
+				if (errorCounter > 0) {
+					// do nothing for avoiding infinit loop.
+				} else {
+					// Increment error counter.
+					errorCounter += 1;
+					if (errorCode == 2) { // ID token was expired.
+						// Renew (refresh) ID token.
+						refreshToken('button_click');
+					}
 				}
 			}
 		});
@@ -95,7 +98,6 @@ $(document).ready(function(){
 <div id="refreshToken">No Refresh Token</div>
 <div><input type="text" id="text-input" /></div>
 <div><button>click this</button></div>
-<div>counter: <span id="counter">0</span></div>
 <div id="msg"></div>
 <div><a href="logout.jsp">logout</a></div>
 <script type="text/javascript">
