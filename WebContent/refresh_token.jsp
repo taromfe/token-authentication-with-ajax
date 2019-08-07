@@ -1,7 +1,17 @@
 <%@ page language="java" contentType="application/json"
     pageEncoding="UTF-8"%>
-<%@ page import="java.util.Date" %>
+<%@ page import="java.util.Date,java.io.*,java.util.Properties" %>
 <%
+Properties prop = new Properties();
+long tokenIssuedTime = 0;
+int tokenSequenceNumber = -1;
+
+try (InputStream is = new FileInputStream("C:/Temp/dynamic_token.properties")){
+	prop.load(is);
+	tokenIssuedTime = Long.parseLong(prop.getProperty("token_issued_time"));
+	tokenSequenceNumber = Integer.parseInt(prop.getProperty("token_sequence_number"));
+} catch (Exception e) {
+}
 // Check the refresh token in the request header matches to one in session object.
 // Get the refresh token in the request header.
 String refreshTokenInParam = request.getParameter("refresh_token");
@@ -26,20 +36,21 @@ if (refreshTokenInSession == null || usernameInSession == null) { // Refresh tok
 	// The refresh token is valid and proceed to renew ID token.
 	// Never cache the content of this page (URL).
 	response.setHeader("Cache-Control", "private, no-store, no-cache, must-revalidate");
-	// Get the counter for ID token to renew the token.
-	Integer tokenSequenceNum = (Integer)session.getAttribute("token_sequential_num");
-	// Increment the couter value.
-	tokenSequenceNum = new Integer(tokenSequenceNum.intValue() + 1);
-	// A new ID token is "token" + <Token Sequential Number>.
-	String idToken = "token" + tokenSequenceNum.toString();
-	// Store the new ID token in session object.
-	session.setAttribute("IdToken", idToken);
-	// Store the new counter value to session object.
-	session.setAttribute("token_sequential_num", tokenSequenceNum);
-	// Reset token issued time.
-	session.setAttribute("token_issued_time", new Long(new Date().getTime()));
+	// Set new token sequece number.
+	tokenSequenceNumber += 1;
+	prop.setProperty("token_sequence_number", Integer.toString(tokenSequenceNumber));
+	// Set ID token.
+	String idToken = ("token" + tokenSequenceNumber);
+	prop.setProperty("id_token", idToken);
+	// Set token issued time.
+	prop.setProperty("token_issued_time", Long.toString(new Date().getTime()));
 %>
 {"IdToken": "<%= idToken %>"}
 <%
+	// Store the properties.
+	try (OutputStream os = new FileOutputStream("C:/Temp/dynamic_token.properties")) {
+		prop.store(os, "");
+	} catch (Exception e) {		
+	}
 }
 %>

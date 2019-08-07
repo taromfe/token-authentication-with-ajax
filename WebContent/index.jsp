@@ -29,6 +29,7 @@ $(document).ready(function(){
 			dataType: 'json',
 			data: "refresh_token=" + localStorage.getItem("RefreshToken") + "&username=<%= username %>",
 			success: function(data) {
+				errorCounter = 0;
 				// Retrieve new ID token from response.
 				idToken = data["IdToken"];
 				// Store the new ID token to local storage.
